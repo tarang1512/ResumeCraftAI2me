@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Python virtual environments
+venv/
+__pycache__/
+*.pyc
+
+# Generated files
+package-lock.json
+*.log
+
+# Credentials and tokens
+*.token
+*token.json
+.cloudflare_token
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Media
+*.mp3
+*.ogg
+*.mp4
+*.wav
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Test files
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Optional: Uncomment to ignore memory files
+# memory/*.md
+*/

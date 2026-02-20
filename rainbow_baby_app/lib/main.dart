@@ -1,29 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'presentation/pages/home/home_page.dart';
+import 'presentation/pages/symptoms/symptom_log_page.dart';
+import 'presentation/pages/vitals/vitals_dashboard.dart';
+import 'presentation/pages/partner/partner_dashboard.dart';
+import 'presentation/pages/settings/settings_page.dart';
+import 'presentation/pages/calendar/calendar_page.dart';
+import 'presentation/pages/journal/journal_page.dart';
+import 'presentation/pages/community/community_page.dart';
+import 'presentation/pages/notifications/notifications_page.dart';
 
-import 'core/theme/app_theme.dart';
-import 'core/constants/app_constants.dart';
-import 'data/services/health_service.dart';
-import 'data/services/database_service.dart';
-import 'presentation/blocs/pregnancy/pregnancy_bloc.dart';
-import 'presentation/blocs/symptom/symptom_bloc.dart';
-import 'presentation/blocs/health/health_bloc.dart';
-import 'presentation/blocs/risk/risk_bloc.dart';
-import 'presentation/pages/splash/splash_page.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase
-  await Firebase.initializeApp();
-  
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
-  await DatabaseService().init();
-  
+void main() {
   runApp(const RainbowBabyApp());
 }
 
@@ -32,27 +18,24 @@ class RainbowBabyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => PregnancyBloc()),
-            BlocProvider(create: (_) => SymptomBloc()),
-            BlocProvider(create: (_) => HealthBloc(HealthService())),
-            BlocProvider(create: (_) => RiskBloc()),
-          ],
-          child: MaterialApp(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            home: const SplashPage(),
-          ),
-        );
+    return MaterialApp(
+      title: 'Rainbow Baby',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.pink,
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomePage(),
+        '/symptoms': (context) => const SymptomLogPage(),
+        '/vitals': (context) => const VitalsDashboard(),
+        '/partner': (context) => const PartnerDashboard(),
+        '/settings': (context) => const SettingsPage(),
+        '/calendar': (context) => const CalendarPage(),
+        '/journal': (context) => const JournalPage(),
+        '/community': (context) => const CommunityPage(),
+        '/notifications': (context) => const NotificationsPage(),
       },
     );
   }

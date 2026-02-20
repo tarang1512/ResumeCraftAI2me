@@ -1,0 +1,16 @@
+[Unit]
+Description=WhatsApp Voice Note Translator (Simple)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/.openclaw/workspace
+Environment="PATH=/home/ubuntu/.openclaw/workspace/Indic-TTS/venv311/bin:/home/ubuntu/.npm-global/bin:/usr/bin:/bin"
+Environment="HOME=/home/ubuntu"
+Environment="PYTHONPATH=/home/ubuntu/.openclaw/workspace/Indic-TTS"
+ExecStart=/home/ubuntu/.openclaw/workspace/Indic-TTS/venv311/bin/python3 /home/ubuntu/.openclaw/workspace/voice_watcher.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

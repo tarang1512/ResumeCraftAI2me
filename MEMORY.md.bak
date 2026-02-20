@@ -1,0 +1,82 @@
+# MEMORY.md - Long-Term Memory
+
+## User Profile
+
+**Tarang** — Piscataway, NJ (EST/EDT)
+- Working style: Listen once, execute; patient debugging; creative solutions; no fluff
+- Technical, builds Flutter apps
+
+**Avani (wifey)** — New Delhi, India (IST)
+- WhatsApp: +18482479657
+- Needs: shopping help, decision support, medicine reminders
+- Personality: confused easily, loves shopping
+- Communication style: funny, romantic, caring
+- Nicknames: baby / babe (never "chaato")
+- Medicine reminder: 9:30 PM daily (cron set)
+
+## System Configuration
+
+**Primary Model:** Kimi K2.5 via NVIDIA NIM (free tier, 200k context)
+- Config: `nvidia-nim/nvidia/moonshotai/kimi-k2.5`
+- Fallback: `kimi-coding/k2p5` → `nvidia/llama-3.3-nemotron-super-49b-v1`
+
+**Gateway:** Local mode (ws://127.0.0.1:18789)
+- Direct IP: http://13.221.145.84:18789
+- Dashboard: http://127.0.0.1:18789/
+
+**WhatsApp:** Enabled (Avani's number configured)
+
+## Projects
+
+### RainbowBaby App
+- **Repo:** `tarang1512/Rainbow-baby` (GitHub, public)
+- **Stack:** Flutter (iOS/Android)
+- **Features:** Week tracking, symptom logging, Partner mode, HealthKit integration
+- **Status:** Built and running on macOS
+- **Location:** `/home/ubuntu/.openclaw/workspace/rainbow_baby_app/`
+
+### Gujarati Vocab Learning
+- **File:** `/home/ubuntu/.openclaw/workspace/gujarati_vocab.md` (130+ words)
+- **Cron:** Daily 9 AM UTC auto-update from web search
+- **Learned:** Slang (ghoghi, babuchak, ghamagham), basics (beta, kasu nai, aaje), phrases
+
+### VisionClaw (iOS App)
+- **Repo:** `sseanliu/VisionClaw`
+- **Purpose:** Meta Ray-Ban glasses + Gemini Live + OpenClaw integration
+- **Note:** Gateway bind changed to `lan` for iPhone connectivity
+
+## Session Rules (Effective 2026-02-11)
+
+**On startup, load ONLY:**
+1. SOUL.md
+2. USER.md
+3. IDENTITY.md
+4. memory/YYYY-MM-DD.md (today's file if exists)
+
+**DO NOT auto-load:**
+- MEMORY.md
+- Session history
+- Prior messages
+- Previous tool outputs
+
+**When context needed:** Use `memory_search()` → `memory_get()` on demand.
+
+**At session end, update:** memory/YYYY-MM-DD.md with what worked on, decisions, blockers, next steps.
+
+## Key Decisions
+
+- Consolidated `wife-agent` into main agent with persona switching (easier management)
+- Tarang's number → debug mode; Avani's number → romantic/caring/funny mode
+- HTTPS setup deferred (Caddy issues with AWS security groups)
+- Memory: Daily files for raw logs, MEMORY.md for distilled wisdom
+
+## Pending/Blockers
+
+- Browser Relay / Chrome extension origin mismatch (using direct IP for now)
+- HTTPS dashboard access (Caddy removed due to AWS security groups)
+- RainbowBaby GitHub repo needs manual creation (token permissions issue)
+- ~~talk2me agent tool formatting~~ ✓ Fixed 2026-02-13 (proper skill structure with config.json)
+
+---
+
+*Last updated: 2026-02-13*
