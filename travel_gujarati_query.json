@@ -4,7 +4,6 @@
     {
       "role": "system",
       "content": "Provide 10+ travel-related Gujarati words/phrases with English transliteration and concise meanings. Theme: travel (airport, hotel, transport, sightseeing, food). Format as markdown table with columns: Gujarati, Transliteration, English."
-}
-]
-}"
     }
+  ]
+}

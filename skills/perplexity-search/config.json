@@ -1,0 +1,13 @@
+{
+  "tools": [
+    {
+      "name": "perplexity-search.search",
+      "description": "Search the web using Perplexity AI (Sonar model). Returns answer with citations. Env: PERPLEXITY_API_KEY",
+      "command": "python3 scripts/search.py",
+      "timeoutMs": 30000,
+      "workingDirectory": "/home/ubuntu/.openclaw/workspace/skills/perplexity-search",
+      "args": ["${query}", "${model}"],
+      "env": ["PERPLEXITY_API_KEY"]
+    }
+  ]
+}

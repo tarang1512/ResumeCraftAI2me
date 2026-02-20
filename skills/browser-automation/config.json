@@ -1,0 +1,11 @@
+{
+  "id": "browser-automation",
+  "name": "Browser Automation",
+  "description": "Headless Chromium browser for web automation",
+  "version": "1.0.0",
+  "author": "PatelBot",
+  "config": {
+    "browsers": ["chromium", "chromium-headless-shell"],
+    "location": "~/.cache/ms-playwright/"
+  }
+}

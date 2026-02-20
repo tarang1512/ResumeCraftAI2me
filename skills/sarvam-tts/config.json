@@ -1,0 +1,14 @@
+{
+  "name": "sarvam-tts",
+  "description": "Text-to-Speech using Sarvam AI API for Gujarati and Indian languages",
+  "tools": ["tts"],
+  "api": {
+    "baseUrl": "https://api.sarvam.ai/v1",
+    "authType": "bearer"
+  },
+  "config": {
+    "defaultVoice": "hitesh",
+    "defaultModel": "bulbul:v2",
+    "supportedLanguages": ["gu-IN", "hi-IN", "ta-IN", "te-IN", "kn-IN", "ml-IN", "bn-IN", "mr-IN", "pa-IN", "as-IN"]
+  }
+}

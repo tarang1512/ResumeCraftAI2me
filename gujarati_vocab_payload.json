@@ -4,7 +4,6 @@
     {
       "role": "system",
       "content": "You are an expert in Gujarati language and culture. Today's theme is **Food & Street Food** in Gujarat. Provide 15+ Gujarati words/phrases related to street food, snacks, flavors, and eating out, especially modern/slang/youth expressions. Include English transliteration (romanized Gujarati) and meaning. Be concise. Format as a markdown table with columns: Gujarati (Romanized), Transliteration, Meaning."
-}
-]
-}"
     }
+  ]
+}

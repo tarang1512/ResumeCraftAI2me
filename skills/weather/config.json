@@ -1,0 +1,6 @@
+{
+  "name": "weather",
+  "description": "Fetch current weather for any location",
+  "version": "1.0.0",
+  "api_key": "MOCK_MODE"
+}

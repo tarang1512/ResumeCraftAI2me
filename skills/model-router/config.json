@@ -1,0 +1,27 @@
+{
+  "enabled": true,
+  "autoActivate": true,
+  "tools": [
+    {
+      "name": "model-router.route",
+      "description": "Analyze a request and route to the appropriate free model (Qwen for complex reasoning, Kimi for coding/technical, Mistral for quick tasks). Returns model ID and reasoning.",
+      "command": "python3 scripts/route.py",
+      "timeoutMs": 5000,
+      "workingDirectory": "/home/ubuntu/.openclaw/workspace/skills/model-router"
+    }
+  ],
+  "routing": {
+    "enabled": true,
+    "defaultModel": "nvidia-nim/qwen/qwen3.5-397b-a17b",
+    "models": {
+      "qwen": "nvidia-nim/qwen/qwen3.5-397b-a17b",
+      "kimi": "nvidia-nim/moonshotai/kimi-k2.5",
+      "mistral": "nvidia-nim/mistralai/mistral-large-3-675b-instruct-2512"
+    },
+    "rules": {
+      "qwen": ["complex reasoning", "strategy", "deep analysis", "evaluate", "compare", "nuance"],
+      "kimi": ["code", "debug", "technical", "api", "json", "build", "fix"],
+      "mistral": ["quick", "simple", "what", "when", "where", "hi", "thanks"]
+    }
+  }
+}

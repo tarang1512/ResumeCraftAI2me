@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>OpenClaw Web</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #161b22;
+            padding: 12px 16px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .status.offline { background: #da3633; }
+        .status.online { background: #238636; }
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .message {
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 16px;
+            max-width: 85%;
+        }
+        .user { background: #1f6feb; margin-left: auto; }
+        .assistant { background: #30363d; }
+        .input-area {
+            padding: 12px;
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            display: flex;
+            gap: 8px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid #30363d;
+            background: #0d1117;
+            color: #fff;
+            font-size: 16px;
+        }
+        button {
+            width: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #1f6feb;
+            color: white;
+            font-size: 18px;
+        }
+        button.voice { background: #30363d; }
+        button.voice.recording { background: #da3633; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .settings {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings.show { display: flex; }
+        .settings-box {
+            background: #161b22;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 360px;
+        }
+        .settings-box input {
+            width: 100%;
+            margin: 8px 0 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="status offline" id="status"></div>
+        <span>OpenClaw Web</span>
+        <button onclick="showSettings()" style="width:auto;padding:6px 12px;border-radius:6px;margin-left:auto;font-size:14px;">⚙️</button>
+    </div>
+    
+    <div class="chat" id="chat"></div>
+    
+    <div class="input-area">
+        <button class="voice" id="voiceBtn" onclick="toggleVoice()">🎙️</button>
+        <input type="text" id="msg" placeholder="Type or press mic..." onkeypress="if(event.key==='Enter')send()">
+        <button onclick="send()">➤</button>
+    </div>
+    
+    <div class="settings" id="settings">
+        <div class="settings-box">
+            <h2 style="margin-bottom:16px;">⚙️ Settings</h2>
+            <label>Gateway URL:</label>
+            <input type="text" id="url" value="ws://13.221.145.84:18789">
+            <label>Auth Token:</label>
+            <input type="text" id="token" value="49d2105edb5c5111652b251cf8952a01043b98ca9fe967fb">
+            <button onclick="save()" style="width:100%;padding:12px;border-radius:8px;">Connect</button>
+            <button onclick="hideSettings()" style="width:100%;margin-top:8px;background:#30363d;padding:12px;border-radius:8px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let ws, recognition, isRecording = false;
+        const urlInput = document.getElementById('url');
+        const tokenInput = document.getElementById('token');
+        const chat = document.getElementById('chat');
+        const status = document.getElementById('status');
+        
+        // Setup Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('msg').value = text;
+                send();
+            };
+            recognition.onend = () => stopRecording();
+        }
+        
+        function connect() {
+            if (ws) ws.close();
+            const url = urlInput.value;
+            const token = tokenInput.value;
+            
+            ws = new WebSocket(`${url}?token=${token}`);
+            ws.onopen = () => status.className = 'status online';
+            ws.onclose = () => { status.className = 'status offline'; setTimeout(connect, 3000); };
+            ws.onerror = () => status.className = 'status offline';
+            ws.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === 'message' && data.content) {
+                    addMsg(data.content, 'assistant');
+                    speak(data.content);
+                }
+            };
+        }
+        
+        function addMsg(text, who) {
+            const div = document.createElement('div');
+            div.className = `message ${who}`;
+            div.textContent = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        function send() {
+            const input = document.getElementById('msg');
+            const text = input.value.trim();
+            if (!text || !ws) return;
+            addMsg(text, 'user');
+            ws.send(JSON.stringify({ type: 'message', content: text }));
+            input.value = '';
+        }
+        
+        function toggleVoice() {
+            if (!recognition) { alert('Voice not supported'); return; }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                document.getElementById('voiceBtn').classList.add('recording');
+                isRecording = true;
+            }
+        }
+        
+        function stopRecording() {
+            document.getElementById('voiceBtn').classList.remove('recording');
+            isRecording = false;
+        }
+        
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utter = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utter);
+            }
+        }
+        
+        function showSettings() { document.getElementById('settings').classList.add('show'); }
+        function hideSettings() { document.getElementById('settings').classList.remove('show'); }
+        function save() { hideSettings(); connect(); }
+        
+        // Init
+        connect();
+    </script>
+</body>
+</html>
