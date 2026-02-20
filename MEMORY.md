@@ -43,13 +43,6 @@
 
 ## Projects
 
-### RainbowBaby App
-- **Repo:** `tarang1512/Rainbow-baby` (GitHub, public)
-- **Stack:** Flutter (iOS/Android)
-- **Features:** Week tracking, symptom logging, Partner mode, HealthKit integration
-- **Status:** Built and running on macOS
-- **Location:** `/home/ubuntu/.openclaw/workspace/rainbow_baby_app/`
-
 ### Gujarati Vocab Learning
 - **File:** `/home/ubuntu/.openclaw/workspace/gujarati_vocab.md` (130+ words)
 - **Cron:** Daily 9 AM UTC auto-update from web search
@@ -90,7 +83,6 @@
 
 - ~~Browser Relay / Chrome extension~~ ✓ Removed 2026-02-18 (using direct IP)
 - HTTPS dashboard access (Caddy removed due to AWS security groups)
-- RainbowBaby GitHub repo needs manual creation (token permissions issue)
 - ~~talk2me agent tool formatting~~ ✓ Fixed 2026-02-13 (proper skill structure with config.json)
 
 ---
