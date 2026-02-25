@@ -789,8 +789,8 @@
             <a href="#" onclick="showGuides()">Guides</a>
             <a href="#" onclick="showAbout()">About</a>
             <a href="#" onclick="showContactModal()">Contact</a>
-            <button class="btn btn-secondary btn-sm" onclick="toggleTheme()">
-                <i class="fas fa-moon"></i>
+            <button class="btn btn-secondary btn-sm" onclick="toggleDarkMode()">
+                <i id="darkModeIcon" class="fas fa-moon"></i>
             </button>
         </div>
     </nav>
@@ -1118,7 +1118,7 @@
             extractedText: '',
             atsScore: 0,
             currentTemplate: 'modern',
-            darkMode: false,
+            darkMode: true,
             versionHistory: []
         };
 
@@ -1168,6 +1168,12 @@
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
                 document.body.classList.add('light-mode');
                 state.darkMode = false;
+            }
+            
+            // Set initial icon state
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            if (darkModeIcon) {
+                darkModeIcon.className = state.darkMode ? 'fas fa-moon' : 'fas fa-sun';
             }
         }
 
