@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeCraft AI - Build Professional Resumes in Seconds</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="icon">✨</span>
+                <h1>ResumeCraft AI</h1>
+            </div>
+            <p class="tagline">Build professional resumes with AI in seconds</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <h2>Enter Your Information</h2>
+                <form id="resumeForm">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" placeholder="John Doe" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" placeholder="john@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+1 234 567 890">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">Target Job Title *</label>
+                        <input type="text" id="title" name="title" placeholder="Software Engineer" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experience">Work Experience *</label>
+                        <textarea id="experience" name="experience" rows="4" placeholder="Company Name - Role (Dates)&#10;Key responsibilities and achievements..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="education">Education *</label>
+                        <textarea id="education" name="education" rows="3" placeholder="Degree - University (Year)&#10;Relevant coursework or achievements..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills">Skills *</label>
+                        <textarea id="skills" name="skills" rows="2" placeholder="JavaScript, Python, Project Management, Leadership..." required></textarea>
+                    </div>
+
+                    <button type="submit" id="generateBtn" class="btn-primary">
+                        <span class="btn-text">Generate Resume</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="spinner"></span> Generating...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <div class="output-header">
+                    <h2>Your Professional Resume</h2>
+                    <div class="btn-group">
+                        <button id="copyBtn" class="btn-secondary">📋 Copy</button>
+                        <button id="downloadBtn" class="btn-secondary">💾 Download</button>
+                    </div>
+                </div>
+                <div id="resumePreview" class="resume-preview"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Made with ❤️ by ResumeCraft AI</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
