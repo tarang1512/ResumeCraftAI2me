@@ -1390,9 +1390,23 @@
                     <i class="fas fa-briefcase"></i>
                     Job Description Analyzer
                 </div>
+                
+                <!-- LinkedIn URL Input -->
+                <div style="margin-bottom:0.75rem;">
+                    <input type="url" id="linkedinUrlInput" placeholder="Paste LinkedIn job URL here..." 
+                        style="width:100%;padding:0.625rem 0.875rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.9rem;box-sizing:border-box;">
+                    <button class="jd-btn" onclick="scrapeLinkedInJob()" style="margin-top:0.5rem;background:var(--success);width:100%;">
+                        <i class="fas fa-link"></i> Fetch from LinkedIn
+                    </button>
+                    <div style="text-align:center;margin:0.5rem 0;color:var(--text-muted);font-size:0.8rem;">— OR —</div>
+                </div>
+                
                 <textarea id="jdInput" class="jd-textarea" placeholder="Paste a job description here to analyze keyword matches..."></textarea>
                 <button class="jd-btn" onclick="analyzeJD()">
                     <i class="fas fa-search"></i> Analyze Keywords
+                </button>
+                <button class="jd-btn" onclick="getOptimizationSuggestions()" style="margin-top:0.5rem;background:var(--warning);color:white;">
+                    <i class="fas fa-magic"></i> Get AI Suggestions
                 </button>
                 <div id="jdResults" class="jd-results" style="display:none;">
                     <div class="jd-title">Matched Keywords</div>
@@ -2015,10 +2029,161 @@
             saveToLocalStorage();
         };
 
+        // API Configuration
+        const API_BASE_URL = 'https://resumecraft-api.onrender.com'; // Will update after Render deploy
+        let apiAvailable = false;
+
+        // Check API health
+        async function checkAPI() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/`, { method: 'GET', mode: 'cors' });
+                if (response.ok) {
+                    apiAvailable = true;
+                    console.log('ResumeCraft API connected');
+                }
+            } catch (e) {
+                console.log('API not available, using local mode');
+                apiAvailable = false;
+            }
+        }
+
+        // Scrape LinkedIn Job
+        async function scrapeLinkedInJob() {
+            const urlInput = document.getElementById('linkedinUrlInput');
+            const url = urlInput?.value?.trim();
+            
+            if (!url || !url.includes('linkedin.com')) {
+                showToast('Please enter a valid LinkedIn job URL', 'error');
+                return;
+            }
+
+            showToast('Scraping job description...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/scrape-linkedin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('jdInput').value = data.description;
+                    showToast(`Loaded: ${data.title}`, 'success');
+                    // Auto-analyze after loading
+                    analyzeJDWithAPI(data.description);
+                } else {
+                    showToast(data.error || 'Failed to scrape job', 'error');
+                }
+            } catch (e) {
+                showToast('API error. Falling back to manual paste.', 'error');
+                console.error(e);
+            }
+        }
+
+        // Advanced ATS Analysis with API
+        async function analyzeJDWithAPI(jobDescription) {
+            if (!apiAvailable) {
+                analyzeJD(); // Fallback to local
+                return;
+            }
+
+            const resumeText = JSON.stringify(resumeData);
+            
+            try {
+                showToast('Analyzing with AI...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/ats-score`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resume: resumeText,
+                        job_description: jobDescription
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI with API results
+                    document.getElementById('atsScore').textContent = data.score;
+                    document.getElementById('atsScore').style.color = data.score >= 70 ? 'var(--success)' : data.score >= 40 ? 'var(--warning)' : 'var(--danger)';
+                    
+                    // Update breakdown
+                    document.getElementById('keywordScore').textContent = data.breakdown.keyword_match + '%';
+                    document.getElementById('formatScore').textContent = data.breakdown.tech_skills + '%';
+                    document.getElementById('contentScore').textContent = data.breakdown.length + '%';
+                    
+                    // Update keyword lists
+                    const matchedEl = document.getElementById('jdMatched');
+                    const missingEl = document.getElementById('jdMissing');
+                    
+                    matchedEl.innerHTML = data.found_keywords.map(k => `<span class="jd-keyword jd-matched"><i class="fas fa-check"></i> ${k}</span>`).join('') || '<span style="color:var(--text-muted);font-size:0.75rem;">No matches</span>';
+                    missingEl.innerHTML = data.missing_keywords.map(k => `<span class="jd-keyword jd-missing">${k}</span>`).join('') || '<span style="color:var(--success);font-size:0.75rem;">Great match!</span>';
+                    
+                    document.getElementById('jdResults').style.display = 'block';
+                    showSuggestions(data.missing_keywords.slice(0, 5));
+                    
+                    showToast(`ATS Score: ${data.score}/100`, data.score >= 70 ? 'success' : 'info');
+                }
+            } catch (e) {
+                console.error('API analysis failed, using local:', e);
+                analyzeJD(); // Fallback
+            }
+        }
+
+        // Get optimization suggestions from API
+        async function getOptimizationSuggestions() {
+            if (!apiAvailable) {
+                showToast('API not available. Add keywords manually.', 'info');
+                return;
+            }
+
+            const jdText = document.getElementById('jdInput').value;
+            if (!jdText) {
+                showToast('Paste a job description first', 'error');
+                return;
+            }
+
+            try {
+                showToast('Getting AI suggestions...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/optimize-resume`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resume: JSON.stringify(resumeData),
+                        job_description: jdText
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const panel = document.getElementById('suggestionsPanel');
+                    const list = document.getElementById('suggestionsList');
+                    
+                    list.innerHTML = data.suggestions.map(s => `
+                        <div class="suggestion-item">
+                            <i class="fas fa-lightbulb" style="color:var(--warning);margin-right:0.5rem;"></i>
+                            ${s}
+                        </div>
+                    `).join('');
+                    
+                    panel.style.display = 'block';
+                    showToast('AI suggestions ready!', 'success');
+                }
+            } catch (e) {
+                showToast('Could not get suggestions', 'error');
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
             renderPreview();
+            checkAPI(); // Check if backend is available
         });
     </script>
 </body>
