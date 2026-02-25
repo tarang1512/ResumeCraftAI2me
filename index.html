@@ -1050,6 +1050,40 @@
             }
         }
     </style>
+/* Import/Export Panel */
+.import-export-panel { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1rem; border: 1px solid var(--border); }
+.import-export-panel h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+.ie-buttons { display: flex; flex-direction: column; gap: 0.5rem; }
+.ie-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
+.ie-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.ie-btn i { width: 1rem; }
+
+/* JD Parser */
+.jd-panel { background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 1px solid #fbbf24; border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1rem; }
+.jd-header { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--text); }
+.jd-header i { color: #f59e0b; }
+.jd-textarea { width: 100%; min-height: 100px; padding: 0.75rem; border: 1px solid #fbbf24; border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; resize: vertical; margin-bottom: 0.75rem; }
+.jd-textarea:focus { outline: none; border-color: var(--primary); }
+.jd-btn { width: 100%; padding: 0.625rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.jd-btn:hover { background: var(--primary-dark); }
+.jd-results { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(251, 191, 36, 0.5); }
+.jd-title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+.jd-keywords { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.jd-keyword { padding: 0.25rem 0.5rem; border-radius: 20px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; }
+.jd-matched { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success); }
+.jd-missing { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); }
+
+/* Suggestions Panel */
+.suggestions-panel { background: linear-gradient(135deg, #ede9fe 0%, #f5f3ff 100%); border: 1px solid #8b5cf6; border-radius: var(--radius-lg); padding: 1rem; margin-top: 1rem; }
+.suggestions-header { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--text); }
+.suggestions-header i { color: #8b5cf6; }
+.suggestion-item { padding: 0.5rem 0.75rem; background: white; border-radius: var(--radius); margin-bottom: 0.5rem; font-size: 0.8rem; border-left: 3px solid #8b5cf6; }
+.suggestion-item strong { color: var(--primary); }
+
+/* Auto-save indicator */
+.autosave { position: fixed; bottom: 1rem; right: 1.5rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.75rem; color: var(--text-muted); z-index: 1000; box-shadow: var(--shadow); }
+.autosave.saved { color: var(--success); }
+.autosave i { font-size: 0.875rem; }
 </head>
 <body>
     <!-- Navigation -->
@@ -1334,6 +1368,50 @@
                         <div class="keywords-list" id="skillsList" style="margin-top: 0.75rem;"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Import/Export Panel -->
+            <div class="import-export-panel">
+                <h4><i class="fas fa-database"></i> Save & Load</h4>
+                <div class="ie-buttons">
+                    <button class="ie-btn" onclick="exportResume()">
+                        <i class="fas fa-download"></i> Export JSON
+                    </button>
+                    <button class="ie-btn" onclick="document.getElementById('importFile').click()">
+                        <i class="fas fa-upload"></i> Import JSON
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importResume(this)">
+                </div>
+            </div>
+
+            <!-- Job Description Parser -->
+            <div class="jd-panel">
+                <div class="jd-header">
+                    <i class="fas fa-briefcase"></i>
+                    Job Description Analyzer
+                </div>
+                <textarea id="jdInput" class="jd-textarea" placeholder="Paste a job description here to analyze keyword matches..."></textarea>
+                <button class="jd-btn" onclick="analyzeJD()">
+                    <i class="fas fa-search"></i> Analyze Keywords
+                </button>
+                <div id="jdResults" class="jd-results" style="display:none;">
+                    <div class="jd-title">Matched Keywords</div>
+                    <div id="jdMatched" class="jd-keywords"></div>
+                    <div class="jd-title" style="margin-top:0.75rem;">Missing Keywords</div>
+                    <div id="jdMissing" class="jd-keywords"></div>
+                    <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-secondary);">
+                        Match: <strong id="jdMatchPercent">0%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggestions Panel -->
+            <div id="suggestionsPanel" class="suggestions-panel" style="display:none;">
+                <div class="suggestions-header">
+                    <i class="fas fa-lightbulb"></i>
+                    AI Suggestions
+                </div>
+                <div id="suggestionsList"></div>
             </div>
 
             <div class="sidebar-footer">
@@ -1774,8 +1852,172 @@
         function showTerms() { showToast('Terms of service coming soon!', 'info'); }
         function showContact() { showToast('Contact form coming soon!', 'info'); }
 
+        // Export/Import JSON
+        function exportResume() {
+            const dataStr = JSON.stringify(resumeData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `resume-${resumeData.personalInfo.fullName?.replace(/\s+/g, '-').toLowerCase() || 'untitled'}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Resume exported successfully!', 'success');
+        }
+
+        function importResume(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    resumeData = data;
+                    populateForm();
+                    updateResume();
+                    showToast('Resume imported successfully!', 'success');
+                } catch (err) {
+                    showToast('Invalid JSON file', 'error');
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        function populateForm() {
+            document.getElementById('fullName').value = resumeData.personalInfo.fullName || '';
+            document.getElementById('jobTitle').value = resumeData.personalInfo.jobTitle || '';
+            document.getElementById('email').value = resumeData.personalInfo.email || '';
+            document.getElementById('phone').value = resumeData.personalInfo.phone || '';
+            document.getElementById('location').value = resumeData.personalInfo.location || '';
+            document.getElementById('linkedin').value = resumeData.personalInfo.linkedin || '';
+            document.getElementById('website').value = resumeData.personalInfo.website || '';
+            document.getElementById('summaryEditor').innerHTML = resumeData.summary || '';
+            document.getElementById('skillsInput').value = resumeData.skills.join(', ');
+            
+            // Re-render experience and education
+            document.getElementById('experienceList').innerHTML = '';
+            resumeData.experience.forEach(renderExperienceEntry);
+            document.getElementById('educationList').innerHTML = '';
+            resumeData.education.forEach(renderEducationEntry);
+        }
+
+        // Job Description Analyzer
+        const COMMON_KEYWORDS = ['javascript', 'python', 'react', 'node', 'sql', 'aws', 'docker', 'kubernetes', 'agile', 'scrum', 'leadership', 'communication', 'problem-solving', 'teamwork', 'analytical', 'project management', 'data analysis', 'machine learning', 'cloud', 'git', 'ci/cd', 'rest api', 'microservices', 'typescript', 'java', 'go', 'rust', 'php', 'ruby', 'c++', 'c#', '.net', 'angular', 'vue', 'svelte', 'nextjs', 'nuxt', 'django', 'flask', 'spring', 'laravel', 'rails', 'mongodb', 'postgresql', 'mysql', 'redis', 'elasticsearch', 'kafka', 'rabbitmq', 'graphql', 'oauth', 'jwt', 'ssl', 'https', 'linux', 'bash', 'powershell', 'terraform', 'ansible', 'jenkins', 'github actions', 'gitlab ci', 'circleci', 'prometheus', 'grafana', 'elk', 'splunk', 'datadog', 'new relic'];
+
+        function analyzeJD() {
+            const jdText = document.getElementById('jdInput').value.toLowerCase();
+            if (!jdText.trim()) {
+                showToast('Please paste a job description first', 'error');
+                return;
+            }
+
+            const jdKeywords = [];
+            COMMON_KEYWORDS.forEach(kw => {
+                if (jdText.includes(kw.toLowerCase())) jdKeywords.push(kw);
+            });
+
+            // Extract additional keywords (capitalized words, technical terms)
+            const words = jdText.match(/\b[a-z]+(?:\s+[a-z]+)*\b/g) || [];
+            words.forEach(w => {
+                if (w.length > 3 && !jdKeywords.includes(w) && !['with', 'from', 'have', 'will', 'that', 'this', 'your', 'their', 'they', 'them', 'than', 'been', 'were', 'what', 'when', 'where', 'which', 'while', 'about', 'after', 'before', 'during', 'under', 'over', 'into', 'onto', 'upon', 'within', 'without', 'through', 'between', 'among', 'against', 'towards', 'across', 'around', 'behind', 'beside', 'below', 'above', 'underneath'].includes(w)) {
+                    jdKeywords.push(w);
+                }
+            });
+
+            const resumeText = JSON.stringify(resumeData).toLowerCase();
+            const matched = [];
+            const missing = [];
+
+            jdKeywords.forEach(kw => {
+                if (resumeText.includes(kw.toLowerCase())) {
+                    matched.push(kw);
+                } else {
+                    missing.push(kw);
+                }
+            });
+
+            // Display results
+            const matchedEl = document.getElementById('jdMatched');
+            const missingEl = document.getElementById('jdMissing');
+            const percentEl = document.getElementById('jdMatchPercent');
+
+            matchedEl.innerHTML = matched.slice(0, 15).map(k => `<span class="jd-keyword jd-matched"><i class="fas fa-check"></i> ${k}</span>`).join('') || '<span style="color:var(--text-muted);font-size:0.75rem;">No matches yet</span>';
+            missingEl.innerHTML = missing.slice(0, 15).map(k => `<span class="jd-keyword jd-missing">${k}</span>`).join('') || '<span style="color:var(--success);font-size:0.75rem;">Great match!</span>';
+            
+            const matchPercent = jdKeywords.length > 0 ? Math.round((matched.length / jdKeywords.length) * 100) : 0;
+            percentEl.textContent = matchPercent + '%';
+            percentEl.style.color = matchPercent >= 70 ? 'var(--success)' : matchPercent >= 40 ? 'var(--warning)' : 'var(--danger)';
+
+            document.getElementById('jdResults').style.display = 'block';
+            
+            // Show suggestions
+            showSuggestions(missing.slice(0, 5));
+            
+            showToast(`Analysis complete! ${matchPercent}% keyword match`, matchPercent >= 70 ? 'success' : 'info');
+        }
+
+        function showSuggestions(missingKeywords) {
+            const panel = document.getElementById('suggestionsPanel');
+            const list = document.getElementById('suggestionsList');
+            
+            if (missingKeywords.length === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            list.innerHTML = missingKeywords.map(kw => `
+                <div class="suggestion-item">
+                    Add <strong>${kw}</strong> to your skills or experience if you have it
+                </div>
+            `).join('');
+            
+            panel.style.display = 'block';
+        }
+
+        // Auto-save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('resumeCraftData', JSON.stringify(resumeData));
+            localStorage.setItem('resumeCraftTemplate', currentTemplate);
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('resumeCraftData');
+            const savedTemplate = localStorage.getItem('resumeCraftTemplate');
+            
+            if (saved) {
+                try {
+                    resumeData = JSON.parse(saved);
+                    if (savedTemplate) currentTemplate = savedTemplate;
+                    populateForm();
+                    showToast('Previous resume loaded from auto-save', 'success');
+                } catch (e) {
+                    console.error('Failed to load saved resume', e);
+                }
+            }
+        }
+
+        // Enhanced updateResume with auto-save
+        const originalUpdateResume = updateResume;
+        updateResume = function() {
+            resumeData.personalInfo.fullName = document.getElementById('fullName').value;
+            resumeData.personalInfo.jobTitle = document.getElementById('jobTitle').value;
+            resumeData.personalInfo.email = document.getElementById('email').value;
+            resumeData.personalInfo.phone = document.getElementById('phone').value;
+            resumeData.personalInfo.location = document.getElementById('location').value;
+            resumeData.personalInfo.linkedin = document.getElementById('linkedin').value;
+            resumeData.personalInfo.website = document.getElementById('website').value;
+            resumeData.summary = document.getElementById('summaryEditor').innerText;
+            
+            renderPreview();
+            calculateATSScore();
+            saveToLocalStorage();
+        };
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
             renderPreview();
         });
     </script>
