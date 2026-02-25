@@ -2029,8 +2029,8 @@
             saveToLocalStorage();
         };
 
-        // API Configuration
-        const API_BASE_URL = 'https://resumecraft-api.onrender.com'; // Will update after Render deploy
+        // API Configuration - Update this after deploying backend
+        const API_BASE_URL = localStorage.getItem('resumecraft_api_url') || 'https://resumecraft-api.onrender.com';
         let apiAvailable = false;
 
         // Check API health
