@@ -1373,17 +1373,17 @@
                 </div>
             </div>
 
-            <!-- Import/Export Panel -->
+            <!-- Upload / Download Resume -->
             <div class="import-export-panel">
-                <h4><i class="fas fa-database"></i> Save & Load</h4>
+                <h4><i class="fas fa-file-pdf"></i> Resume PDF</h4>
                 <div class="ie-buttons">
-                    <button class="ie-btn" onclick="exportResume()">
-                        <i class="fas fa-download"></i> Export JSON
+                    <button class="ie-btn" onclick="downloadPDF()">
+                        <i class="fas fa-download"></i> Download PDF
                     </button>
-                    <button class="ie-btn" onclick="document.getElementById('importFile').click()">
-                        <i class="fas fa-upload"></i> Import JSON
+                    <button class="ie-btn" onclick="document.getElementById('pdfUpload').click()">
+                        <i class="fas fa-upload"></i> Upload Resume (PDF)
                     </button>
-                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importResume(this)">
+                    <input type="file" id="pdfUpload" class="hidden" accept=".pdf" onchange="parsePDF(this)">
                 </div>
             </div>
 
@@ -1869,8 +1869,8 @@
         function showTerms() { showToast('Terms of service coming soon!', 'info'); }
         function showContact() { showToast('Contact form coming soon!', 'info'); }
 
-        // Export/Import JSON
-        function exportResume() {
+        // Export/Upload Resume (PDF)
+        function downloadPDF() {
             const dataStr = JSON.stringify(resumeData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
