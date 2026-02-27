@@ -75,7 +75,10 @@ module.exports = async (req, res) => {
     const missing = [];
     
     keywords.forEach(keyword => {
-      const cleanKeyword = keyword.toLowerCase().replace(/\s+/g, '\\s+');
+      // Escape regex special characters: + . * ? ^ $ ( ) [ ] { } | \
+      const cleanKeyword = keyword.toLowerCase()
+        .replace(/[.+*?^$()[\]{}|\\]/g, '\\$&')
+        .replace(/\s+/g, '\\s+');
       const regex = new RegExp(`\\b${cleanKeyword}\\b`, 'i');
       
       if (jobLower.includes(keyword.toLowerCase())) {
