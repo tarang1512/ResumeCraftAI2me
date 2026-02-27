@@ -6,6 +6,7 @@
     "autoAlias": true
   },
   "routes": [
+    { "src": "/api/generate-resume", "dest": "/api/generate-resume.js" },
     { "src": "/api/ats-score", "dest": "/api/ats-score.js" },
     { "src": "/api/scrape-linkedin", "dest": "/api/scrape-linkedin.js" },
     { "src": "/api/optimize", "dest": "/api/ats-optimize.js" },

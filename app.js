@@ -1,8 +1,7 @@
 // ResumeCraft AI - Main Application
-// Uses NVIDIA NIM free tier for AI-powered resume enhancement
+// Calls backend API securely (API key hidden server-side)
 
-const API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const API_KEY = ''; // Will use fallback if no API key
+const API_URL = '/api/generate-resume';
 
 // DOM Elements
 const form = document.getElementById('resumeForm');
@@ -41,39 +40,24 @@ async function handleGenerate(e) {
 }
 
 async function generateResume(data) {
-    const prompt = buildPrompt(data);
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error("API request failed");
     
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'nvidia-nim/mistralai/mistral-large-3-675b-instruct-2512',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a professional resume writer. Create polished, ATS-friendly resumes. Return only the resume content in clean HTML format with proper sections. Use h1 for name, h2 for section headers, and p/div for content.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 2000
-            })
-        });
-        
-        if (!response.ok) throw new Error('API request failed');
-        
-        const result = await response.json();
-        return result.choices[0].message.content;
-    } catch (error) {
-        throw error;
-    }
+    const result = await response.json();
+    
+    if (!result.success) throw new Error(result.error || "Generation failed");
+    
+    return result.resume;
+    
+  } catch (error) {
+    throw error;
+  }
 }
 
 function buildPrompt(data) {
