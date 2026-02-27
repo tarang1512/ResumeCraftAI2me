@@ -1010,9 +1010,9 @@
                 </div>
                 <h3>Drag & Drop Your Resume</h3>
                 <p>Supports PDF files up to 10MB</p>
-                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                <label for="fileInput" class="btn btn-primary" style="cursor: pointer;">
                     <i class="fas fa-folder-open"></i> Browse Files
-                </button>
+                </label>
                 <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)">
             </div>
             <div class="spinner" id="uploadSpinner"></div>
