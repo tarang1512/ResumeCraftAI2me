@@ -1034,11 +1034,10 @@
                 </div>
                 <h3>Drag & Drop Your Resume</h3>
                 <p>Supports PDF files up to 10MB</p>
-                <button class="btn btn-primary" id="browseBtn" type="button" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-folder-open"></i> Browse Files
-                
-                    <input type="file" id="fileInput" accept=".pdf" onchange="handleFileUpload(this)">
-                </button>
+                <label for="fileInput" class="btn btn-primary" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+                <i class="fas fa-folder-open"></i> Browse Files
+            </label>
+            <input type="file" id="fileInput" accept=".pdf" onchange="handleFileUpload(this)" style="display:none">
             </div>
             <div class="spinner" id="uploadSpinner"></div>
             <div class="pdf-preview" id="pdfPreview">
@@ -1092,6 +1091,70 @@
                         <ul id="suggestionsList" style="padding-left: 1.5rem; color: var(--text-secondary);"></ul>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Generate Resume Section -->
+    <section class="analysis-section" id="generate">
+        <div class="section-header">
+            <h2>Generate <span>New Resume</span></h2>
+            <p>Create a professional resume from scratch with AI assistance.</p>
+        </div>
+        <div class="analysis-container">
+            <div class="analysis-card">
+                <h3><i class="fas fa-user" style="color: var(--primary-light);"></i> Personal Information</h3>
+                <div class="input-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="genName" placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Target Job Title *</label>
+                    <input type="text" id="genTitle" placeholder="Software Engineer">
+                </div>
+                <div class="input-group">
+                    <label>Email *</label>
+                    <input type="email" id="genEmail" placeholder="john@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Phone</label>
+                    <input type="tel" id="genPhone" placeholder="+1 555-123-4567">
+                </div>
+            </div>
+            <div class="analysis-card">
+                <h3><i class="fas fa-briefcase" style="color: var(--secondary);"></i> Experience & Skills</h3>
+                <div class="input-group">
+                    <label>Work Experience</label>
+                    <textarea id="genExperience" placeholder="Senior Developer at Tech Corp (2020-Present)
+• Built scalable web applications
+• Led team of 5 developers"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Education</label>
+                    <textarea id="genEducation" placeholder="BS Computer Science, MIT (2016-2020)"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Skills (comma separated)</label>
+                    <input type="text" id="genSkills" placeholder="Python, React, AWS, Docker, Node.js">
+                </div>
+            </div>
+        </div>
+        <div style="max-width: 1000px; margin: 2rem auto 0; text-align: center;">
+            <button class="btn btn-primary" onclick="generateResume()" style="padding: 1rem 3rem; font-size: 1.1rem;">
+                <i class="fas fa-magic"></i> Generate Professional Resume
+            </button>
+            <div class="spinner" id="generateSpinner" style="margin-top: 1rem;"></div>
+        </div>
+        <div class="upload-container" id="generatedResumeContainer" style="display: none; margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem;"><i class="fas fa-file-alt" style="color: var(--success);"></i> Your Generated Resume</h3>
+            <div id="generatedResume" style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 2rem; margin-bottom: 1rem;"></div>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn btn-primary" onclick="copyResume()">
+                    <i class="fas fa-copy"></i> Copy HTML
+                </button>
+                <button class="btn btn-glass" onclick="downloadResume()">
+                    <i class="fas fa-download"></i> Download HTML
+                </button>
             </div>
         </div>
     </section>
@@ -1389,6 +1452,76 @@
             } finally {
                 spinner.style.display = 'none';
             }
+        }
+
+        // Resume Generation
+        async function generateResume() {
+            const name = document.getElementById('genName').value.trim();
+            const title = document.getElementById('genTitle').value.trim();
+            const email = document.getElementById('genEmail').value.trim();
+            const phone = document.getElementById('genPhone').value.trim();
+            const experience = document.getElementById('genExperience').value.trim();
+            const education = document.getElementById('genEducation').value.trim();
+            const skills = document.getElementById('genSkills').value.trim();
+
+            if (!name || !title || !email) {
+                showToast('Please fill in required fields (Name, Title, Email)', 'error');
+                return;
+            }
+
+            const spinner = document.getElementById('generateSpinner');
+            const container = document.getElementById('generatedResumeContainer');
+            const output = document.getElementById('generatedResume');
+
+            spinner.style.display = 'block';
+            container.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/generate-resume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, title, email, phone, experience, education, skills
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.resume) {
+                    output.innerHTML = data.resume;
+                    container.style.display = 'block';
+                    showToast('Resume generated successfully!', 'success');
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    showToast(data.error || 'Generation failed', 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+
+        function copyResume() {
+            const output = document.getElementById('generatedResume');
+            navigator.clipboard.writeText(output.innerHTML).then(() => {
+                showToast('Resume HTML copied!', 'success');
+            });
+        }
+
+        function downloadResume() {
+            const name = document.getElementById('genName').value.replace(/\s+/g, '_') || 'resume';
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Resume</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}h1{color:#1a1a1a;border-bottom:2px solid #6366f1;padding-bottom:10px}h2{color:#4f46e5;font-size:1.1rem;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #e2e8f0;margin-top:1.5rem}p{margin:0.5rem 0}@media print{body{margin:0}}</style></head><body>${document.getElementById('generatedResume').innerHTML}</body></html>`;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}_Resume.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Resume downloaded!', 'success');
         }
 
         // Smooth scroll for navigation
