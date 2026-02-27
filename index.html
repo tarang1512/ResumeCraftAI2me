@@ -1034,7 +1034,7 @@
                 </div>
                 <h3>Drag & Drop Your Resume</h3>
                 <p>Supports PDF files up to 10MB</p>
-                <button class="btn btn-primary" id="browseBtn" type="button">
+                <button class="btn btn-primary" id="browseBtn" type="button" onclick="document.getElementById('fileInput').click()">
                     <i class="fas fa-folder-open"></i> Browse Files
                 
                     <input type="file" id="fileInput" accept=".pdf" onchange="handleFileUpload(this)">
@@ -1119,20 +1119,7 @@
             ease: 'power3.out'
         });
 
-// Browse button click handler
-        gsap.from('.hero-subtitle', {
-            opacity: 0,
-            y: 30,
-            duration: 1,
-            delay: 0.2,
-            ease: 'power3.out'
-        });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         gsap.from('.hero-buttons', {
             opacity: 0,
@@ -1142,11 +1129,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             ease: 'power3.out'
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         gsap.from('.stat-item', {
             opacity: 0,
@@ -1157,11 +1139,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             ease: 'power3.out'
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         gsap.from('.resume-card', {
             opacity: 0,
@@ -1172,11 +1149,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             ease: 'power3.out'
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // Feature cards animation
         gsap.utils.toArray('.feature-card').forEach((card, i) => {
@@ -1193,18 +1165,8 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
                 ease: 'power3.out'
             });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // Upload section animation
         gsap.from('.upload-container', {
@@ -1218,11 +1180,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             ease: 'power3.out'
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // Analysis cards animation
         gsap.utils.toArray('.analysis-card').forEach((card, i) => {
@@ -1237,18 +1194,8 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
                 ease: 'power3.out'
             });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // Toast notification system
         function showToast(message, type = 'info') {
@@ -1329,21 +1276,11 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             uploadArea.classList.add('dragover');
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -1355,11 +1292,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             }
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // LinkedIn scraping
         async function scrapeLinkedIn() {
@@ -1378,11 +1310,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
                     body: JSON.stringify({ url })
                 });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
                 const data = await response.json();
 
@@ -1426,11 +1353,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
                     })
                 });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
                 const data = await response.json();
 
@@ -1477,26 +1399,11 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
                 }
             });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
 
         // Navbar scroll effect
         window.addEventListener('scroll', () => {
@@ -1508,11 +1415,6 @@ document.getElementById("browseBtn").addEventListener("click", function(e) {
             }
         });
 
-// Browse button click handler
-document.getElementById("browseBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("fileInput").click();
-});
     </script>
 </body>
 </html>
