@@ -224,3 +224,121 @@ function showMessage(text, type) {
     
     setTimeout(() => msg.remove(), 3000);
 }
+
+// File Upload Handling
+async function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.type !== 'application/pdf') {
+    alert('Please upload a PDF file');
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert('File size must be less than 10MB');
+    return;
+  }
+
+  const spinner = document.getElementById('uploadSpinner');
+  const uploadArea = document.getElementById('uploadArea');
+  
+  if (spinner) spinner.style.display = 'block';
+  
+  try {
+    // Read PDF using PDF.js
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + ' ';
+    }
+
+    // Store extracted text and show success
+    window.extractedResumeText = fullText.trim();
+    
+    // Update UI
+    if (uploadArea) {
+      uploadArea.innerHTML = `
+        <div class="upload-icon" style="color: var(--success);">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>✅ Resume Uploaded Successfully</h3>
+        <p>${file.name} (${(file.size / 1024).toFixed(1)} KB)</p>
+        <button class="btn btn-primary" onclick="resetUpload()">
+          <i class="fas fa-redo"></i> Upload Different File
+        </button>
+      `;
+    }
+    
+    // Auto-fill form if resume form exists
+    const resumeForm = document.getElementById('resumeForm');
+    if (resumeForm && fullText) {
+      // Try to extract basic info and fill form
+      extractAndFillResumeData(fullText);
+    }
+    
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    alert('Error reading PDF. Please try again.');
+  } finally {
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+function resetUpload() {
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  
+  if (fileInput) fileInput.value = '';
+  window.extractedResumeText = '';
+  
+  if (uploadArea) {
+    uploadArea.innerHTML = `
+      <div class="upload-icon">
+        <i class="fas fa-cloud-upload-alt"></i>
+      </div>
+      <h3>Drag & Drop Your Resume</h3>
+      <p>Supports PDF files up to 10MB</p>
+      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-folder-open"></i> Browse Files
+      </button>
+      <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)">
+    `;
+  }
+}
+
+function extractAndFillResumeData(text) {
+  // Simple extraction logic - can be enhanced
+  const lines = text.split(/\n|\.\s+/).filter(l => l.trim());
+  
+  // Try to find name (first line with 2-3 words, capitalized)
+  for (const line of lines.slice(0, 10)) {
+    const words = line.trim().split(/\s+/);
+    if (words.length >= 2 && words.length <= 4 && /^[A-Z]/.test(line)) {
+      const nameInput = document.querySelector('input[name="name"]');
+      if (nameInput && !nameInput.value) {
+        nameInput.value = line.trim();
+        break;
+      }
+    }
+  }
+  
+  // Try to find email
+  const emailMatch = text.match(/[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}/);
+  if (emailMatch) {
+    const emailInput = document.querySelector('input[name="email"]');
+    if (emailInput) emailInput.value = emailMatch[0];
+  }
+  
+  // Try to find phone
+  const phoneMatch = text.match(/[\+]?[\d\s\-\(\)]{10,}/);
+  if (phoneMatch) {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) phoneInput.value = phoneMatch[0];
+  }
+}
