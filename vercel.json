@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "resumecraft-frontend",
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  },
+  "routes": [
+    { "src": "/api/ats-score", "dest": "/api/ats-score.js" },
+    { "src": "/api/scrape-linkedin", "dest": "/api/scrape-linkedin.js" },
+    { "src": "/api/optimize", "dest": "/api/ats-optimize.js" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 30
+    }
+  }
+}

@@ -7,7 +7,6 @@
     <title>ResumeCraft AI - Free Resume Builder | ATS-Friendly Templates</title>
     <meta name="description" content="Build a professional resume in minutes. ATS-optimized templates, real-time scoring, and AI-powered suggestions. Free to use.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1052,7 +1051,6 @@
             }
         }
     </style>
-<style>
 /* Import/Export Panel */
 .import-export-panel { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1rem; border: 1px solid var(--border); }
 .import-export-panel h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
@@ -1087,7 +1085,6 @@
 .autosave { position: fixed; bottom: 1rem; right: 1.5rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.75rem; color: var(--text-muted); z-index: 1000; box-shadow: var(--shadow); }
 .autosave.saved { color: var(--success); }
 .autosave i { font-size: 0.875rem; }
-</style>
 </head>
 <body>
     <!-- Navigation -->
@@ -1374,17 +1371,17 @@
                 </div>
             </div>
 
-            <!-- Upload / Download Resume -->
+            <!-- Import/Export Panel -->
             <div class="import-export-panel">
-                <h4><i class="fas fa-file-pdf"></i> Resume PDF</h4>
+                <h4><i class="fas fa-database"></i> Save & Load</h4>
                 <div class="ie-buttons">
-                    <button class="ie-btn" onclick="downloadPDF()">
-                        <i class="fas fa-download"></i> Download PDF
+                    <button class="ie-btn" onclick="exportResume()">
+                        <i class="fas fa-download"></i> Export JSON
                     </button>
-                    <button class="ie-btn" onclick="document.getElementById('pdfUpload').click()">
-                        <i class="fas fa-upload"></i> Upload Resume (PDF)
+                    <button class="ie-btn" onclick="document.getElementById('importFile').click()">
+                        <i class="fas fa-upload"></i> Import JSON
                     </button>
-                    <input type="file" id="pdfUpload" class="hidden" accept=".pdf" onchange="parsePDF(this)">
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importResume(this)">
                 </div>
             </div>
 
@@ -1870,8 +1867,8 @@
         function showTerms() { showToast('Terms of service coming soon!', 'info'); }
         function showContact() { showToast('Contact form coming soon!', 'info'); }
 
-        // Export/Upload Resume (PDF)
-        function downloadPDF() {
+        // Export/Import JSON
+        function exportResume() {
             const dataStr = JSON.stringify(resumeData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -2034,7 +2031,7 @@
         };
 
         // API Configuration - Update this after deploying backend
-        const API_BASE_URL = ''; // Use same domain for API (relative paths)
+        const API_BASE_URL = localStorage.getItem('resumecraft_api_url') || 'https://resumecraft-api-vercel.vercel.app';
         let apiAvailable = false;
 
         // Check API health
@@ -2183,52 +2180,6 @@
             }
         }
 
-
-        // PDF Upload & Parse
-        async function parsePDF(input) {
-            const file = input.files[0];
-            if (!file) return;
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                showToast('Please upload a PDF file', 'error');
-                return;
-            }
-            showToast('Parsing PDF...', 'info');
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let fullText = '';
-                for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    fullText += content.items.map(item => item.str).join(' ') + '\n';
-                }
-                extractFromPDF(fullText);
-                showToast('PDF parsed! Review your resume.', 'success');
-            } catch (e) {
-                console.error(e);
-                showToast('Could not parse PDF. Fill in manually.', 'error');
-            }
-            input.value = '';
-        }
-
-        function extractFromPDF(text) {
-            const lines = text.split('\n').filter(l => l.trim());
-            if (lines[0]) resumeData.personalInfo.fullName = lines[0].trim();
-            const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
-            if (emailMatch) resumeData.personalInfo.email = emailMatch[0];
-            const phoneMatch = text.match(/\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/);
-            if (phoneMatch) resumeData.personalInfo.phone = phoneMatch[0];
-            const linkedinMatch = text.match(/linkedin\.com\/[^\s]+/i);
-            if (linkedinMatch) resumeData.personalInfo.linkedin = 'https://' + linkedinMatch[0];
-            const summaryMatch = text.match(/(?:Summary|Profile)[:\s]*([^\n]+(?:\n[^\n]{0,50}){0,3})/i);
-            if (summaryMatch) resumeData.summary = summaryMatch[1].trim();
-            const skillsMatch = text.match(/(?:Skills|Technologies)[:\s]*([^\n]+)/i);
-            if (skillsMatch) {
-                resumeData.skills = skillsMatch[1].split(/[,;]/).map(s => s.trim()).filter(s => s.length > 1);
-            }
-            populateForm();
-            updateResume();
-        }
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
