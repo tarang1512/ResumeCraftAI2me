@@ -304,10 +304,10 @@ function resetUpload() {
       </div>
       <h3>Drag & Drop Your Resume</h3>
       <p>Supports PDF files up to 10MB</p>
-      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-        <i class="fas fa-folder-open"></i> Browse Files
-      </button>
-      <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)">
+            <label for="fileInput" class="btn btn-primary" style="cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;gap:8px;position:relative;z-index:100">
+                <i class="fas fa-folder-open"></i> Browse Files
+            </label>
+            <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)" style="display:none">
     `;
   }
 }
