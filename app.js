@@ -67,31 +67,62 @@ async function handleFileUpload(input) {
 
     window.extractedResumeText = fullText.trim();
 
-    // RENDER VISUAL PREVIEW ON CANVAS
-    const pdfCanvas = document.getElementById('pdfCanvas');
+    // RENDER FULL PDF PREVIEW (ALL PAGES)
     const pdfCanvasContainer = document.getElementById('pdfCanvasContainer');
     const pdfPreview = document.getElementById('pdfPreview');
     
-    if (pdfCanvas && pdf) {
-      // Use scale 1.5 for better readability
-      const firstPage = await pdf.getPage(1);
-      const viewport = firstPage.getViewport({ scale: 1.5 });
+    if (pdfCanvasContainer && pdf) {
+      // Clear previous content
+      pdfCanvasContainer.innerHTML = '';
+      pdfCanvasContainer.style.display = 'block';
+      pdfCanvasContainer.style.overflow = 'auto';
+      pdfCanvasContainer.style.background = '#1a1a2e';
       
-      pdfCanvas.width = viewport.width;
-      pdfCanvas.height = viewport.height;
+      // Render ALL pages
+      const scale = 1.3; // Good balance of quality vs size
+      const numPages = pdf.numPages;
       
-      const ctx = pdfCanvas.getContext('2d');
-      await firstPage.render({ canvasContext: ctx, viewport }).promise;
-      
-      // Show visual preview
-      if (pdfCanvasContainer) {
-        pdfCanvasContainer.style.display = 'block';
-        // Enable scrolling for large PDFs
-        pdfCanvasContainer.style.overflow = 'auto';
+      for (let pageNum = 1; pageNum <= numPages && pageNum <= 3; pageNum++) { // Limit to first 3 pages for performance
+        try {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale });
+          
+          // Create canvas for this page
+          const canvas = document.createElement('canvas');
+          canvas.style.display = 'block';
+          canvas.style.margin = '10px auto';
+          canvas.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
+          canvas.style.background = 'white';
+          canvas.style.maxWidth = '100%';
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          
+          pdfCanvasContainer.appendChild(canvas);
+          
+          // Add page separator
+          if (pageNum < numPages && pageNum < 3) {
+            const separator = document.createElement('div');
+            separator.style.textAlign = 'center';
+            separator.style.color = '#6366f1';
+            separator.style.padding = '10px';
+            separator.innerHTML = '<i class="fas fa-ellipsis-h"></i> Page ' + pageNum;
+            pdfCanvasContainer.appendChild(separator);
+          }
+        } catch (pageErr) {
+          console.error('Error rendering page', pageNum, pageErr);
+        }
       }
+      
+      // Show preview container
       if (pdfPreview) {
         pdfPreview.classList.add('active');
       }
+      
+      // Store PDF for analysis section
+      window.pdfData = arrayBuffer;
     }
     
     // Also show text content
