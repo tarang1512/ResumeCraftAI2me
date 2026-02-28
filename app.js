@@ -75,6 +75,7 @@ async function handleFileUpload(input) {
       // Clear previous content
       pdfCanvasContainer.innerHTML = '';
       pdfCanvasContainer.style.display = 'block';
+      console.log('PDF Canvas Container set to display:block');
       pdfCanvasContainer.style.overflow = 'auto';
       pdfCanvasContainer.style.background = '#1a1a2e';
       
