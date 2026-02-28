@@ -3,226 +3,30 @@
 
 const API_URL = '/api/generate-resume';
 
-// DOM Elements
-const form = document.getElementById('resumeForm');
-const generateBtn = document.getElementById('generateBtn');
-const btnText = generateBtn.querySelector('.btn-text');
-const btnLoading = generateBtn.querySelector('.btn-loading');
-const outputSection = document.getElementById('outputSection');
-const resumePreview = document.getElementById('resumePreview');
-const copyBtn = document.getElementById('copyBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-
-// Event Listeners
-form.addEventListener('submit', handleGenerate);
-copyBtn.addEventListener('click', copyToClipboard);
-downloadBtn.addEventListener('click', downloadResume);
-
-async function handleGenerate(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-    
-    setLoading(true);
-    
-    try {
-        const resume = await generateResume(data);
-        displayResume(resume);
-    } catch (error) {
-        console.error('Generation failed:', error);
-        // Fallback to template-based generation
-        const resume = generateTemplateResume(data);
-        displayResume(resume);
-    } finally {
-        setLoading(false);
-    }
-}
-
-async function generateResume(data) {
+// PDF Rendering Function
+async function renderPdfToCanvas(elementId, arrayBuffer, scale = 1.0) {
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) throw new Error("API request failed");
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const canvas = document.getElementById(elementId);
+    if (!canvas) return null;
     
-    const result = await response.json();
+    const firstPage = await pdf.getPage(1);
+    const viewport = firstPage.getViewport({ scale });
     
-    if (!result.success) throw new Error(result.error || "Generation failed");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
     
-    return result.resume;
+    const ctx = canvas.getContext('2d');
+    await firstPage.render({ canvasContext: ctx, viewport }).promise;
     
-  } catch (error) {
-    throw error;
+    // Store PDF data for later
+    window.pdfData = arrayBuffer;
+    
+    return { pageCount: pdf.numPages, width: viewport.width, height: viewport.height };
+  } catch (e) {
+    console.error('PDF render error:', e);
+    return null;
   }
-}
-
-function buildPrompt(data) {
-    return `Create a professional resume for:
-
-Name: ${data.name}
-Target Role: ${data.title}
-Email: ${data.email}
-Phone: ${data.phone || 'N/A'}
-
-Work Experience:
-${data.experience}
-
-Education:
-${data.education}
-
-Skills:
-${data.skills}
-
-Format as clean HTML with these sections:
-1. Header with name (large, bold) and contact info
-2. Professional Summary (2-3 sentences highlighting key strengths)
-3. Experience (formatted with company, role, dates, bullet points for achievements)
-4. Education (formatted nicely)
-5. Skills (as a clean list)
-
-Use professional formatting. Make achievements sound impactful with action verbs.`;
-}
-
-function generateTemplateResume(data) {
-    // Parse experience into structured format
-    const expLines = data.experience.split('\n').filter(line => line.trim());
-    const eduLines = data.education.split('\n').filter(line => line.trim());
-    const skillList = data.skills.split(/[,\n]/).map(s => s.trim()).filter(s => s);
-    
-    // Generate professional summary based on role
-    const summary = generateSummary(data.title, expLines.length, skillList);
-    
-    let html = `
-        <div class="resume-header">
-            <h1>${escapeHtml(data.name)}</h1>
-            <p class="job-title">${escapeHtml(data.title)}</p>
-            <p class="contact-info">
-                ${escapeHtml(data.email)}${data.phone ? ' | ' + escapeHtml(data.phone) : ''}
-            </p>
-        </div>
-        
-        <h2>Professional Summary</h2>
-        <p>${escapeHtml(summary)}</p>
-        
-        <h2>Experience</h2>
-    `;
-    
-    // Format experience
-    expLines.forEach(line => {
-        if (line.includes('-') || line.includes('|') || line.includes('at')) {
-            html += `<p><strong>${escapeHtml(line)}</strong></p>`;
-        } else {
-            html += `<p>• ${escapeHtml(line)}</p>`;
-        }
-    });
-    
-    html += `<h2>Education</h2>`;
-    eduLines.forEach(line => {
-        html += `<p>${escapeHtml(line)}</p>`;
-    });
-    
-    html += `<h2>Skills</h2>`;
-    html += `<p>${escapeHtml(skillList.join(' • '))}</p>`;
-    
-    return html;
-}
-
-function generateSummary(title, expYears, skills) {
-    const actionVerbs = ['Results-driven', 'Innovative', 'Detail-oriented', 'Strategic', 'Dynamic'];
-    const verb = actionVerbs[Math.floor(Math.random() * actionVerbs.length)];
-    
-    let summary = `${verb} ${title} with ${expYears > 0 ? 'proven experience' : 'strong foundation'} in `;
-    
-    if (skills.length >= 3) {
-        summary += `${skills[0].toLowerCase()}, ${skills[1].toLowerCase()}, and ${skills[2].toLowerCase()}. `;
-    } else if (skills.length > 0) {
-        summary += `${skills[0].toLowerCase()}. `;
-    } else {
-        summary += `the field. `;
-    }
-    
-    summary += `Demonstrated ability to deliver high-quality results and collaborate effectively in fast-paced environments. Seeking to leverage expertise to drive success and contribute to organizational goals.`;
-    
-    return summary;
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function displayResume(html) {
-    resumePreview.innerHTML = html;
-    outputSection.style.display = 'block';
-    outputSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-function setLoading(loading) {
-    generateBtn.disabled = loading;
-    btnText.style.display = loading ? 'none' : 'inline';
-    btnLoading.style.display = loading ? 'flex' : 'none';
-}
-
-function copyToClipboard() {
-    const text = resumePreview.innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        showMessage('Copied to clipboard!', 'success');
-        copyBtn.textContent = '✅ Copied!';
-        setTimeout(() => copyBtn.textContent = '📋 Copy', 2000);
-    });
-}
-
-function downloadResume() {
-    const name = document.getElementById('name').value.replace(/\s+/g, '_');
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>${document.getElementById('name').value} - Resume</title>
-    <style>
-        body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        h1 { color: #1a1a1a; border-bottom: 2px solid #6366f1; padding-bottom: 10px; }
-        h2 { color: #4f46e5; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; margin-top: 1.5rem; }
-        .job-title { font-size: 1.1rem; color: #555; font-weight: 500; }
-        .contact-info { color: #666; margin-bottom: 1rem; }
-        p { margin: 0.5rem 0; }
-        @media print { body { margin: 0; } }
-    </style>
-</head>
-<body>
-    ${resumePreview.innerHTML}
-</body>
-</html>`;
-    
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name}_Resume.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showMessage('Resume downloaded!', 'success');
-}
-
-function showMessage(text, type) {
-    const existing = document.querySelector('.message');
-    if (existing) existing.remove();
-    
-    const msg = document.createElement('div');
-    msg.className = `message ${type}`;
-    msg.textContent = text;
-    outputSection.insertBefore(msg, outputSection.firstChild);
-    
-    setTimeout(() => msg.remove(), 3000);
 }
 
 // File Upload Handling
@@ -242,14 +46,17 @@ async function handleFileUpload(input) {
 
   const spinner = document.getElementById('uploadSpinner');
   const uploadArea = document.getElementById('uploadArea');
-  
+
   if (spinner) spinner.style.display = 'block';
-  
+
   try {
-    // Read PDF using PDF.js
+    // Read PDF
     const arrayBuffer = await file.arrayBuffer();
+    window.pdfData = arrayBuffer;
+    
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     
+    // Extract text
     let fullText = '';
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
@@ -258,10 +65,46 @@ async function handleFileUpload(input) {
       fullText += pageText + ' ';
     }
 
-    // Store extracted text and show success
     window.extractedResumeText = fullText.trim();
+
+    // RENDER VISUAL PREVIEW ON CANVAS
+    const pdfCanvas = document.getElementById('pdfCanvas');
+    const pdfCanvasContainer = document.getElementById('pdfCanvasContainer');
+    const pdfPreview = document.getElementById('pdfPreview');
     
-    // Update UI
+    if (pdfCanvas && pdf) {
+      // Use scale 1.5 for better readability
+      const firstPage = await pdf.getPage(1);
+      const viewport = firstPage.getViewport({ scale: 1.5 });
+      
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+      
+      const ctx = pdfCanvas.getContext('2d');
+      await firstPage.render({ canvasContext: ctx, viewport }).promise;
+      
+      // Show visual preview
+      if (pdfCanvasContainer) {
+        pdfCanvasContainer.style.display = 'block';
+        // Enable scrolling for large PDFs
+        pdfCanvasContainer.style.overflow = 'auto';
+      }
+      if (pdfPreview) {
+        pdfPreview.classList.add('active');
+      }
+    }
+    
+    // Also show text content
+    const pdfContent = document.getElementById('pdfContent');
+    if (pdfContent) {
+      const displayText = fullText.trim().substring(0, 3000)
+        .replace(/\s+/g, ' ')
+        .replace(/\n\s*\n/g, '\n\n')
+        .trim();
+      pdfContent.textContent = displayText + (fullText.length > 3000 ? "\n\n..." : "");
+    }
+
+    // Update UI to success state
     if (uploadArea) {
       uploadArea.innerHTML = `
         <div class="upload-icon" style="color: var(--success);">
@@ -274,43 +117,44 @@ async function handleFileUpload(input) {
         </button>
       `;
     }
-    
-    // Auto-fill form if resume form exists
+
+    // Auto-fill resume form
     const resumeForm = document.getElementById('resumeForm');
     if (resumeForm && fullText) {
-      // Try to extract basic info and fill form
       extractAndFillResumeData(fullText);
-
-    // Show live preview of resume content
-    const pdfPreview = document.getElementById("pdfPreview");
-    const pdfContent = document.getElementById("pdfContent");
-    if (pdfPreview && pdfContent) {
-        pdfPreview.classList.add("active");
-        const displayText = fullText.trim().substring(0, 3000).replace(/\s+/g, " ").replace(/\n\s*\n/g, "\n\n").trim();
-        pdfContent.textContent = displayText + (fullText.length > 3000 ? "\n\n..." : "");
-    }
     }
     
   } catch (error) {
     console.error('PDF parsing error:', error);
-    alert('Error reading PDF. Please try again.');
+    alert('Error reading PDF: ' + error.message);
   } finally {
     if (spinner) spinner.style.display = 'none';
   }
 }
 
 function resetUpload() {
-
-    // Hide preview
-    const pdfPreview = document.getElementById("pdfPreview");
-    const pdfContent = document.getElementById("pdfContent");
-    if (pdfPreview) pdfPreview.classList.remove("active");
-    if (pdfContent) pdfContent.textContent = "";
-  const uploadArea = document.getElementById('uploadArea');
-  const fileInput = document.getElementById('fileInput');
+  // Hide previews
+  const pdfPreview = document.getElementById('pdfPreview');
+  const pdfCanvasContainer = document.getElementById('pdfCanvasContainer');
+  const pdfCanvas = document.getElementById('pdfCanvas');
+  const pdfContent = document.getElementById('pdfContent');
   
+  if (pdfPreview) pdfPreview.classList.remove('active');
+  if (pdfCanvasContainer) pdfCanvasContainer.style.display = 'none';
+  if (pdfCanvas) {
+    const ctx = pdfCanvas.getContext('2d');
+    ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+  }
+  if (pdfContent) pdfContent.textContent = '';
+  
+  // Clear data
   if (fileInput) fileInput.value = '';
   window.extractedResumeText = '';
+  window.pdfData = null;
+  
+  // Reset preview in analysis section
+  const analysisPreviewSection = document.getElementById('resumePreviewSection');
+  if (analysisPreviewSection) analysisPreviewSection.style.display = 'none';
   
   if (uploadArea) {
     uploadArea.innerHTML = `
@@ -319,19 +163,18 @@ function resetUpload() {
       </div>
       <h3>Drag & Drop Your Resume</h3>
       <p>Supports PDF files up to 10MB</p>
-            <label for="fileInput" class="btn btn-primary" style="cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;gap:8px;position:relative;z-index:100">
-                <i class="fas fa-folder-open"></i> Browse Files
-            </label>
-            <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)" style="display:none">
+      <label for="fileInput" class="btn btn-primary" style="cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;gap:8px;position:relative;z-index:100">
+        <i class="fas fa-folder-open"></i> Browse Files
+      </label>
+      <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileUpload(this)" style="display:none">
     `;
   }
 }
 
 function extractAndFillResumeData(text) {
-  // Simple extraction logic - can be enhanced
   const lines = text.split(/\n|\.\s+/).filter(l => l.trim());
   
-  // Try to find name (first line with 2-3 words, capitalized)
+  // Find name
   for (const line of lines.slice(0, 10)) {
     const words = line.trim().split(/\s+/);
     if (words.length >= 2 && words.length <= 4 && /^[A-Z]/.test(line)) {
@@ -343,17 +186,189 @@ function extractAndFillResumeData(text) {
     }
   }
   
-  // Try to find email
+  // Find email
   const emailMatch = text.match(/[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}/);
   if (emailMatch) {
     const emailInput = document.querySelector('input[name="email"]');
     if (emailInput) emailInput.value = emailMatch[0];
   }
   
-  // Try to find phone
+  // Find phone
   const phoneMatch = text.match(/[\+]?[\d\s\-\(\)]{10,}/);
   if (phoneMatch) {
     const phoneInput = document.querySelector('input[name="phone"]');
     if (phoneInput) phoneInput.value = phoneMatch[0];
   }
 }
+
+// Toast notification
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;z-index:1000;font-weight:500;';
+  
+  if (type === 'success') toast.style.background = '#10b981';
+  else if (type === 'error') toast.style.background = '#ef4444';
+  else toast.style.background = '#6366f1';
+  
+  toast.style.color = 'white';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// LinkedIn Scrape
+async function scrapeLinkedIn() {
+  const url = document.getElementById('linkedinUrl').value.trim();
+  if (!url) {
+    showToast('Please enter a LinkedIn job URL', 'error');
+    return;
+  }
+
+  showToast('Fetching job description...', 'info');
+
+  try {
+    const response = await fetch('/api/scrape-linkedin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const contentType = response.headers.get('content-type');
+    let data
+    // Handle response
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text.substring(0, 100) || 'Invalid response');
+    }
+
+    if (data.success) {
+      document.getElementById('jobDescription').value = data.description;
+      showToast(`Loaded: ${data.title} at ${data.company}`, 'success');
+    } else {
+      showToast(data.error || 'Failed to fetch job', 'warning');
+    }
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+}
+
+// Resume Analysis
+async function analyzeResume() {
+  if (!window.extractedResumeText) {
+    showToast('Please upload a resume first', 'error');
+    return;
+  }
+
+  const jobDescription = document.getElementById('jobDescription').value.trim();
+  if (!jobDescription) {
+    showToast('Please enter a job description', 'error');
+    return;
+  }
+
+  // SHOW PDF PREVIEW FIRST IN ANALYSIS SECTION
+  const previewSection = document.getElementById('resumePreviewSection');
+  const analysisCanvas = document.getElementById('analysisPdfCanvas');
+  
+  if (previewSection && analysisCanvas && window.pdfData) {
+    try {
+      const pdf = await pdfjsLib.getDocument({ data: window.pdfData }).promise;
+      const firstPage = await pdf.getPage(1);
+      const viewport = firstPage.getViewport({ scale: 1.0 });
+      
+      analysisCanvas.width = viewport.width;
+      analysisCanvas.height = viewport.height;
+      
+      const ctx = analysisCanvas.getContext('2d');
+      await firstPage.render({ canvasContext: ctx, viewport }).promise;
+      
+      previewSection.style.display = 'block';
+      
+      // Scroll to resume preview
+      previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      console.error('PDF render error:', e);
+    }
+  }
+
+  const spinner = document.getElementById('analysisSpinner');
+  const result = document.getElementById('atsResult');
+
+  if (spinner) spinner.style.display = 'block';
+  if (result) result.classList.remove('active');
+
+  try {
+    const response = await fetch('/api/ats-score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        resume: window.extractedResumeText, 
+        job_description: jobDescription 
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Update score
+      const scoreValue = document.getElementById('scoreValue');
+      const scoreCircle = document.getElementById('scoreCircle');
+      if (scoreValue) scoreValue.textContent = data.score;
+      if (scoreCircle) scoreCircle.style.setProperty('--score', data.score);
+
+      // Update keywords
+      const foundContainer = document.getElementById('foundKeywords');
+      const missingContainer = document.getElementById('missingKeywords');
+      
+      if (foundContainer) {
+        foundContainer.innerHTML = (data.found_keywords || [])
+          .map(k => `<span class="keyword-tag keyword-found"><i class="fas fa-check"></i> ${k}</span>`)
+          .join('');
+      }
+      
+      if (missingContainer) {
+        missingContainer.innerHTML = (data.missing_keywords || [])
+          .map(k => `<span class="keyword-tag keyword-missing"><i class="fas fa-times"></i> ${k}</span>`)
+          .join('');
+      }
+
+      // Update suggestions
+      const suggestionsList = document.getElementById('suggestionsList');
+      if (suggestionsList) {
+        suggestionsList.innerHTML = (data.suggestions || [])
+          .map(s => `<li style="margin-bottom: 0.5rem;">${s}</li>`)
+          .join('');
+      }
+
+      if (result) {
+        result.classList.add('active');
+        // Scroll to results
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      showToast(`Analysis complete! Score: ${data.score}/100`, 'success');
+    } else {
+      showToast(data.error || 'Analysis failed', 'error');
+    }
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+  } finally {
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+// DOM Elements and Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize any necessary elements
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      handleFileUpload(this);
+    });
+  }
+});
