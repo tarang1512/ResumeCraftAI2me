@@ -555,12 +555,13 @@
         .file-input { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
         /* PDF Preview */
-        .pdf-preview {
+.pdf-preview {
+            display: none;
             margin-top: 2rem;
             padding: 2rem;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 16px;
-            position: absolute; opacity: 0; cursor: pointer; width: 0; height: 0;
+            position: relative;
         }
 
         .pdf-preview.active {
