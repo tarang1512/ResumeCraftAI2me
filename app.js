@@ -302,31 +302,44 @@ async function analyzeResume() {
     return;
   }
 
-  // SHOW PDF PREVIEW FIRST IN ANALYSIS SECTION
+// SHOW FULL PDF PREVIEW (ALL PAGES) IN ANALYSIS SECTION
   const previewSection = document.getElementById('resumePreviewSection');
-  const analysisCanvas = document.getElementById('analysisPdfCanvas');
+  const resumePreviewCanvas = document.getElementById('resumePreviewCanvas');
   
-  if (previewSection && analysisCanvas && window.pdfData) {
+  if (previewSection && resumePreviewCanvas && window.pdfData) {
     try {
+      resumePreviewCanvas.innerHTML = '';
+      resumePreviewCanvas.style.display = 'block';
+      
       const pdf = await pdfjsLib.getDocument({ data: window.pdfData }).promise;
-      const firstPage = await pdf.getPage(1);
-      const viewport = firstPage.getViewport({ scale: 1.0 });
+      const scale = 1.0;
+      const numPages = Math.min(pdf.numPages, 2);
       
-      analysisCanvas.width = viewport.width;
-      analysisCanvas.height = viewport.height;
-      
-      const ctx = analysisCanvas.getContext('2d');
-      await firstPage.render({ canvasContext: ctx, viewport }).promise;
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+        
+        const canvas = document.createElement('canvas');
+        canvas.style.display = 'block';
+        canvas.style.margin = '10px auto';
+        canvas.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
+        canvas.style.background = 'white';
+        canvas.style.maxWidth = '100%';
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        
+        resumePreviewCanvas.appendChild(canvas);
+      }
       
       previewSection.style.display = 'block';
-      
-      // Scroll to resume preview
       previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
-      console.error('PDF render error:', e);
+      console.error('PDF preview error:', e);
     }
   }
-
   const spinner = document.getElementById('analysisSpinner');
   const result = document.getElementById('atsResult');
 
