@@ -280,6 +280,15 @@ async function handleFileUpload(input) {
     if (resumeForm && fullText) {
       // Try to extract basic info and fill form
       extractAndFillResumeData(fullText);
+
+    // Show live preview of resume content
+    const pdfPreview = document.getElementById("pdfPreview");
+    const pdfContent = document.getElementById("pdfContent");
+    if (pdfPreview && pdfContent) {
+        pdfPreview.classList.add("active");
+        const displayText = fullText.trim().substring(0, 3000).replace(/\s+/g, " ").replace(/\n\s*\n/g, "\n\n").trim();
+        pdfContent.textContent = displayText + (fullText.length > 3000 ? "\n\n..." : "");
+    }
     }
     
   } catch (error) {
@@ -291,6 +300,12 @@ async function handleFileUpload(input) {
 }
 
 function resetUpload() {
+
+    // Hide preview
+    const pdfPreview = document.getElementById("pdfPreview");
+    const pdfContent = document.getElementById("pdfContent");
+    if (pdfPreview) pdfPreview.classList.remove("active");
+    if (pdfContent) pdfContent.textContent = "";
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   

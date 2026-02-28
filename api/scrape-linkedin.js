@@ -49,12 +49,28 @@ module.exports = async (req, res) => {
                     $('a[href*="/company/"]').first().text().trim() ||
                     'Company Not Found';
     
-    const description = $('.description__text').text().trim() ||
-                       $('.show-more-less-html__markup').text().trim() ||
-                       $('[data-test-id="job-description"]').text().trim() ||
-                       $('.job-description').text().trim() ||
-                       $('meta[name="description"]').attr('content') ||
-                       '';
+    // Extract job description - prioritize main content areas
+    let description = $(".show-more-less-html__markup").text().trim() || 
+                      $(".description__text").text().trim() || 
+                      $("[data-test-id="job-description"]").text().trim() || 
+                      $(".job-description").text().trim() || 
+                      "";
+
+    // Clean up: remove empty lines, excess whitespace, special chars
+    if (description) {
+        description = description
+            .replace(/^\s*[\n\r]+/gm, "")
+            .replace(/[\n\r]{3,}/g, "\n\n")
+            .replace(/\s+$/gm, "")
+            .replace(/^\s+/gm, "")
+            .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F]/g, "")
+            .trim();
+    }
+
+    // Fallback if still empty
+    if (!description || description.length < 50) {
+        description = "Job description could not be extracted. The posting may require login or use dynamic loading.";
+    }
     
     const location = $('.top-card-layout__location').text().trim() ||
                     $('.top-card-layout__bullet').text().trim() ||
@@ -65,7 +81,7 @@ module.exports = async (req, res) => {
       title,
       company,
       location,
-      description: `${title}\n${company}\n${location}\n\n${description}`.trim()
+      description: `${title}\n${company}${location ? "\n" + location : ""}\n\n${description}`
     });
     
   } catch (error) {
