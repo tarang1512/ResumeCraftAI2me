@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "name": "docs",
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  },
+  "routes": [
+    { "src": "/api/generate-resume", "dest": "/api/generate-resume.js" },
+    { "src": "/api/ats-score", "dest": "/api/ats-score.js" },
+    { "src": "/api/scrape-linkedin", "dest": "/api/scrape-linkedin.js" },
+    { "src": "/api/optimize", "dest": "/api/ats-optimize.js" },
+    { "src": "/api/optimize-resume", "dest": "/api/optimize-resume.js" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "functions": {
+    "api/**/*": {
+      "maxDuration": 30
+    }
+  }
+}
